@@ -577,8 +577,8 @@
       <div class="unit">avg speedup</div>
     </div>
     <div class="hero-stat">
-      <div class="num">0.08–0.27s</div>
-      <div class="unit">speculation latency</div>
+      <div class="num">0.35–0.68s</div>
+      <div class="unit">response latency</div>
     </div>
     <div class="hero-stat">
       <div class="num">B200</div>
@@ -615,7 +615,7 @@
 ASR (streaming) ════╬══╗
 LLM (speculative) ══╝  ║ → TTS → Audio out
                         ↑
-              speech ends here — only 0.08–0.27s of compute left</div>
+              speech ends here — only 0.35–0.68s until audio response</div>
     </div>
   </div>
 </section>
@@ -624,6 +624,7 @@ LLM (speculative) ══╝  ║ → TTS → Audio out
 <section class="results-section">
   <h2 class="section-title">Benchmark Results</h2>
   <p class="section-sub">
+    Response latency = time from end of speech to audio response &middot;
     Qwen2.5-14B-Instruct on NVIDIA B200 &middot; faster-whisper large-v3 &middot; Kokoro-82M TTS
   </p>
 
@@ -705,21 +706,23 @@ LLM (speculative) ══╝  ║ → TTS → Audio out
 
 <script>
 // ─── Benchmark data ───
+// Response latency = time from end of speech to audio response
+// From metrics.json (actual measured values on B200)
 const benchmarks = [
   {
     name: 'jfk.wav',
-    baseline: { total: 2.64, asr: 0.29, llm: 1.93, tts: 0.42 },
-    predgen:  { total: 0.52, asr: 0.29, llm: 0.08, tts: 0.15 },
+    baseline: { total: 2.64, asr: 0.34, llm: 1.72, tts: 0.58 },
+    predgen:  { total: 0.52, asr: 0.20, llm: 0.21, tts: 0.11 },
   },
   {
     name: 'sample1.wav',
-    baseline: { total: 3.52, asr: 0.30, llm: 2.83, tts: 0.39 },
-    predgen:  { total: 0.68, asr: 0.30, llm: 0.12, tts: 0.26 },
+    baseline: { total: 3.52, asr: 0.28, llm: 3.09, tts: 0.15 },
+    predgen:  { total: 0.68, asr: 0.32, llm: 0.27, tts: 0.10 },
   },
   {
     name: 'sample3.wav',
-    baseline: { total: 2.89, asr: 0.25, llm: 2.28, tts: 0.36 },
-    predgen:  { total: 0.35, asr: 0.25, llm: 0.04, tts: 0.06 },
+    baseline: { total: 2.89, asr: 0.21, llm: 2.53, tts: 0.15 },
+    predgen:  { total: 0.35, asr: 0.17, llm: 0.08, tts: 0.09 },
   },
 ];
 
