@@ -1,0 +1,7 @@
+{
+  "name": "predgen-frontend",
+  "private": true,
+  "scripts": {
+    "start": "npx serve -s . -l $PORT"
+  }
+}

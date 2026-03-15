@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PredGen Voice Agent — Input-Time Speculative Decoding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #06060b;
+    --surface: #0c0c14;
+    --surface-2: #12121e;
+    --border: #1a1a2e;
+    --border-accent: #2a2a4a;
+    --text: #c8c8d8;
+    --text-dim: #666680;
+    --text-bright: #eeeef4;
+    --green: #22d37e;
+    --green-dim: #22d37e33;
+    --red: #ef4444;
+    --red-dim: #ef444433;
+    --blue: #3b82f6;
+    --amber: #f59e0b;
+    --purple: #8b5cf6;
+    --mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+    --sans: 'Space Grotesk', system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--mono);
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ─── Grain overlay ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
+  }
+
+  /* ─── Hero ─── */
+  .hero {
+    position: relative;
+    padding: 5rem 2rem 4rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    right: -200px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, var(--green-dim) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--green);
+    border: 1px solid var(--green);
+    border-radius: 3px;
+    padding: 0.25rem 0.75rem;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards;
+  }
+
+  h1 {
+    font-family: var(--sans);
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 700;
+    color: var(--text-bright);
+    line-height: 1.1;
+    margin-bottom: 1.25rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.1s forwards;
+  }
+
+  h1 span {
+    background: linear-gradient(135deg, var(--green) 0%, #4ade80 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 1rem;
+    color: var(--text-dim);
+    max-width: 640px;
+    line-height: 1.7;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.2s forwards;
+  }
+
+  .hero-stat-row {
+    display: flex;
+    gap: 3rem;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.3s forwards;
+  }
+
+  .hero-stat .num {
+    font-family: var(--sans);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--green);
+  }
+
+  .hero-stat .unit {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ─── Section ─── */
+  section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .section-title {
+    font-family: var(--sans);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-sub {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-bottom: 2rem;
+  }
+
+  /* ─── Problem / Insight ─── */
+  .explainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+  }
+
+  .explainer-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .explainer-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+  }
+
+  .explainer-card.problem::before { background: linear-gradient(90deg, var(--red), transparent); }
+  .explainer-card.insight::before { background: linear-gradient(90deg, var(--green), transparent); }
+
+  .explainer-card h3 {
+    font-family: var(--sans);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .explainer-card.problem h3 { color: var(--red); }
+  .explainer-card.insight h3 { color: var(--green); }
+
+  .explainer-card p {
+    font-size: 0.8rem;
+    line-height: 1.8;
+    color: var(--text);
+  }
+
+  .pipeline-diagram {
+    margin-top: 1.25rem;
+    padding: 1rem;
+    background: var(--bg);
+    border-radius: 6px;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    line-height: 1.6;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* ─── Benchmark Results ─── */
+  .results-section {
+    margin-bottom: 4rem;
+  }
+
+  .legend {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+  }
+
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+  }
+
+  .result-header h3 {
+    font-size: 0.85rem;
+    color: var(--text-bright);
+    font-weight: 500;
+  }
+
+  .speedup-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    background: var(--green-dim);
+    color: var(--green);
+    border: 1px solid var(--green);
+  }
+
+  .timelines {
+    display: grid;
+    grid-template-columns: 80px 1fr 60px;
+    gap: 0.5rem 1rem;
+    align-items: center;
+  }
+
+  .tl-label {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: right;
+  }
+
+  .tl-bar-wrap {
+    position: relative;
+    height: 32px;
+    background: #08080f;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .tl-seg {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: #fff;
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    min-width: 2px;
+  }
+
+  .tl-seg.asr { background: var(--blue); }
+  .tl-seg.llm { background: var(--amber); }
+  .tl-seg.tts { background: var(--purple); }
+
+  .tl-time {
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: var(--mono);
+  }
+
+  .tl-time.slow { color: var(--red); }
+  .tl-time.fast { color: var(--green); }
+
+  /* ─── Tech Stack ─── */
+  .stack-section {
+    margin-bottom: 4rem;
+  }
+
+  .stack-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  .stack-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    text-align: center;
+  }
+
+  .stack-item .name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 0.25rem;
+  }
+
+  .stack-item .desc {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+  }
+
+  /* ─── Live Demo Placeholder ─── */
+  .demo-section {
+    margin-bottom: 5rem;
+  }
+
+  .demo-placeholder {
+    background: var(--surface);
+    border: 1px dashed var(--border-accent);
+    border-radius: 8px;
+    padding: 3rem;
+    text-align: center;
+  }
+
+  .demo-placeholder .icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    opacity: 0.4;
+  }
+
+  .demo-placeholder h3 {
+    font-family: var(--sans);
+    font-size: 1.1rem;
+    color: var(--text-bright);
+    margin-bottom: 0.5rem;
+  }
+
+  .demo-placeholder p {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  /* ─── Footer ─── */
+  .footer {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .footer a {
+    color: var(--green);
+    text-decoration: none;
+  }
+
+  /* ─── Animations ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-in {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .animate-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 768px) {
+    .explainer { grid-template-columns: 1fr; }
+    .stack-grid { grid-template-columns: 1fr 1fr; }
+    .hero-stat-row { gap: 2rem; }
+    .hero { padding: 3rem 1.5rem 2rem; }
+    section { padding: 0 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="tag">SemiAnalysis Hackathon 2026</div>
+  <h1>PredGen <span>Voice Agent</span></h1>
+  <p class="hero-sub">
+    What if your LLM started thinking before you finished speaking?
+    Input-time speculative decoding overlaps inference with speech,
+    cutting voice-to-voice latency from seconds to milliseconds.
+  </p>
+  <div class="hero-stat-row">
+    <div class="hero-stat">
+      <div class="num">6.2x</div>
+      <div class="unit">avg speedup</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num">0.08–0.27s</div>
+      <div class="unit">speculation latency</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num">B200</div>
+      <div class="unit">NVIDIA GPU</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PROBLEM / INSIGHT ═══ -->
+<section style="margin-bottom: 4rem;">
+  <div class="explainer">
+    <div class="explainer-card problem animate-in">
+      <h3>The Problem</h3>
+      <p>
+        Typical voice agents run a sequential pipeline: wait for the user to finish
+        speaking, transcribe the full utterance, send it to the LLM, wait for the
+        full response, then synthesize speech. Each stage blocks the next.
+        For a 14B parameter model, this means <strong>2–4 seconds</strong> of dead air
+        after the user stops talking.
+      </p>
+      <div class="pipeline-diagram">User speaks → [wait] → ASR → [wait] → LLM → [wait] → TTS → Audio out
+                                        ←————— 2.6–3.5s total ——————→</div>
+    </div>
+    <div class="explainer-card insight animate-in">
+      <h3>The Insight</h3>
+      <p>
+        PredGen starts LLM inference <em>while the user is still speaking</em>.
+        As partial transcripts stream in from ASR, the model speculatively generates
+        tokens. When the final transcript arrives, most of the generation is already
+        done — only a small correction step remains. The result: near-zero latency
+        after speech ends.
+      </p>
+      <div class="pipeline-diagram">User speaks ═══════╗
+ASR (streaming) ════╬══╗
+LLM (speculative) ══╝  ║ → TTS → Audio out
+                        ↑
+              speech ends here — only 0.08–0.27s of compute left</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BENCHMARK RESULTS ═══ -->
+<section class="results-section">
+  <h2 class="section-title">Benchmark Results</h2>
+  <p class="section-sub">
+    Qwen2.5-14B-Instruct on NVIDIA B200 &middot; faster-whisper large-v3 &middot; Kokoro-82M TTS
+  </p>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> ASR</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> LLM</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div> TTS</div>
+  </div>
+
+  <div id="results-container"></div>
+</section>
+
+<!-- ═══ TECH STACK ═══ -->
+<section class="stack-section">
+  <h2 class="section-title">Tech Stack</h2>
+  <p class="section-sub">Built for maximum throughput on a single GPU</p>
+  <div class="stack-grid">
+    <div class="stack-item animate-in">
+      <div class="name">Qwen2.5-14B</div>
+      <div class="desc">Instruct-tuned LLM<br>FP16 on B200</div>
+    </div>
+    <div class="stack-item animate-in">
+      <div class="name">faster-whisper</div>
+      <div class="desc">CTranslate2 ASR<br>large-v3 model</div>
+    </div>
+    <div class="stack-item animate-in">
+      <div class="name">Kokoro-82M</div>
+      <div class="desc">Lightweight TTS<br>24kHz output</div>
+    </div>
+    <div class="stack-item animate-in">
+      <div class="name">NVIDIA B200</div>
+      <div class="desc">183GB HBM3e<br>SemiAnalysis cluster</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ LIVE DEMO ═══ -->
+<section class="demo-section">
+  <h2 class="section-title">Live Demo</h2>
+  <p class="section-sub">Try it yourself — send audio to the GPU cluster</p>
+  <div class="demo-placeholder" id="demo-area">
+    <div class="icon">&#9201;</div>
+    <h3>Coming Soon</h3>
+    <p>Live inference endpoint is being wired up.<br>Record or upload audio and hear the difference in real time.</p>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<div class="footer">
+  <span>Based on <a href="https://arxiv.org/abs/2410.18710" target="_blank">PredGen</a> by Shufan Li &amp; Aditya Grover</span>
+  <span>Built at SemiAnalysis Hackathon 2026</span>
+</div>
+
+<script>
+// ─── Benchmark data ───
+const benchmarks = [
+  {
+    name: 'jfk.wav',
+    baseline: { total: 2.64, asr: 0.29, llm: 1.93, tts: 0.42 },
+    predgen:  { total: 0.52, asr: 0.29, llm: 0.08, tts: 0.15 },
+  },
+  {
+    name: 'sample1.wav',
+    baseline: { total: 3.52, asr: 0.30, llm: 2.83, tts: 0.39 },
+    predgen:  { total: 0.68, asr: 0.30, llm: 0.12, tts: 0.26 },
+  },
+  {
+    name: 'sample3.wav',
+    baseline: { total: 2.89, asr: 0.25, llm: 2.28, tts: 0.36 },
+    predgen:  { total: 0.35, asr: 0.25, llm: 0.04, tts: 0.06 },
+  },
+];
+
+const maxTime = Math.max(...benchmarks.map(b => b.baseline.total));
+
+function pct(val) {
+  return (val / maxTime * 100).toFixed(1);
+}
+
+const container = document.getElementById('results-container');
+
+benchmarks.forEach(b => {
+  const speedup = (b.baseline.total / b.predgen.total).toFixed(1);
+
+  // Baseline segments (sequential)
+  const bAsrW = pct(b.baseline.asr);
+  const bLlmL = pct(b.baseline.asr);
+  const bLlmW = pct(b.baseline.llm);
+  const bTtsL = pct(b.baseline.asr + b.baseline.llm);
+  const bTtsW = pct(b.baseline.tts);
+
+  // PredGen: ASR + LLM overlap, then small TTS
+  // Show LLM starting during ASR, finishing quickly after
+  const pAsrW = pct(b.predgen.asr);
+  const pLlmL = pct(b.predgen.asr * 0.3); // starts during ASR
+  const pLlmW = pct(b.predgen.llm + b.predgen.asr * 0.5);
+  const pTtsL = pct(b.predgen.total - b.predgen.tts);
+  const pTtsW = pct(b.predgen.tts);
+
+  const card = document.createElement('div');
+  card.className = 'result-card animate-in';
+  card.innerHTML = `
+    <div class="result-header">
+      <h3>${b.name}</h3>
+      <span class="speedup-badge">${speedup}x faster</span>
+    </div>
+    <div class="timelines">
+      <div class="tl-label">Baseline</div>
+      <div class="tl-bar-wrap">
+        <div class="tl-seg asr" style="left:0;width:${bAsrW}%">ASR</div>
+        <div class="tl-seg llm" style="left:${bLlmL}%;width:${bLlmW}%">LLM</div>
+        <div class="tl-seg tts" style="left:${bTtsL}%;width:${bTtsW}%">TTS</div>
+      </div>
+      <div class="tl-time slow">${b.baseline.total.toFixed(2)}s</div>
+
+      <div class="tl-label">PredGen</div>
+      <div class="tl-bar-wrap">
+        <div class="tl-seg asr" style="left:0;width:${pAsrW}%">ASR</div>
+        <div class="tl-seg llm" style="left:${pLlmL}%;width:${pLlmW}%;opacity:0.85">LLM</div>
+        <div class="tl-seg tts" style="left:${pTtsL}%;width:${pTtsW}%">TTS</div>
+      </div>
+      <div class="tl-time fast">${b.predgen.total.toFixed(2)}s</div>
+    </div>
+  `;
+  container.appendChild(card);
+});
+
+// ─── Scroll animations ───
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
