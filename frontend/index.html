@@ -201,15 +201,70 @@
 
   .pipeline-diagram {
     margin-top: 1.25rem;
-    padding: 1rem;
+    padding: 1rem 1.25rem;
     background: var(--bg);
     border-radius: 6px;
     font-size: 0.7rem;
     color: var(--text-dim);
     font-family: var(--mono);
-    line-height: 1.6;
-    white-space: pre;
     overflow-x: auto;
+  }
+
+  .pipe-row {
+    display: flex;
+    align-items: center;
+    height: 28px;
+    margin-bottom: 4px;
+  }
+
+  .pipe-label {
+    width: 70px;
+    flex-shrink: 0;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    text-align: right;
+    padding-right: 8px;
+    white-space: nowrap;
+  }
+
+  .pipe-track {
+    flex: 1;
+    height: 22px;
+    position: relative;
+    border-radius: 3px;
+  }
+
+  .pipe-bar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .pipe-bar.speech { background: #444466; }
+  .pipe-bar.wait { background: #1a1a2e; border: 1px dashed #333355; }
+  .pipe-bar.asr-bar { background: var(--blue); }
+  .pipe-bar.llm-bar { background: var(--amber); }
+  .pipe-bar.tts-bar { background: var(--purple); }
+
+  .pipe-annotation {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 6px;
+    padding-left: 70px;
+  }
+
+  .pipe-annotation strong { color: var(--red); }
+  .pipe-annotation .fast { color: var(--green); font-weight: 600; }
   }
 
   /* ─── Benchmark Results ─── */
@@ -599,8 +654,34 @@
         For a 14B parameter model, this means <strong>2–4 seconds</strong> of dead air
         after the user stops talking.
       </p>
-      <div class="pipeline-diagram">User speaks → [wait] → ASR → [wait] → LLM → [wait] → TTS → Audio out
-                                        ←————— 2.6–3.5s total ——————→</div>
+      <div class="pipeline-diagram">
+        <div class="pipe-row">
+          <div class="pipe-label">Speech</div>
+          <div class="pipe-track"><div class="pipe-bar speech" style="left:0;width:30%">User speaks</div></div>
+        </div>
+        <div class="pipe-row">
+          <div class="pipe-label">ASR</div>
+          <div class="pipe-track">
+            <div class="pipe-bar wait" style="left:0;width:30%"></div>
+            <div class="pipe-bar asr-bar" style="left:30%;width:12%">ASR</div>
+          </div>
+        </div>
+        <div class="pipe-row">
+          <div class="pipe-label">LLM</div>
+          <div class="pipe-track">
+            <div class="pipe-bar wait" style="left:0;width:42%"></div>
+            <div class="pipe-bar llm-bar" style="left:42%;width:40%">LLM generate</div>
+          </div>
+        </div>
+        <div class="pipe-row">
+          <div class="pipe-label">TTS</div>
+          <div class="pipe-track">
+            <div class="pipe-bar wait" style="left:0;width:82%"></div>
+            <div class="pipe-bar tts-bar" style="left:82%;width:14%">TTS</div>
+          </div>
+        </div>
+        <div class="pipe-annotation">user waits <strong>2.6–3.5s</strong> after speech ends</div>
+      </div>
     </div>
     <div class="explainer-card insight animate-in">
       <h3>The Insight</h3>
@@ -611,11 +692,28 @@
         done — only a small correction step remains. The result: near-zero latency
         after speech ends.
       </p>
-      <div class="pipeline-diagram">User speaks ═══════╗
-ASR (streaming) ════╬══╗
-LLM (speculative) ══╝  ║ → TTS → Audio out
-                        ↑
-              speech ends here — only 0.35–0.68s until audio response</div>
+      <div class="pipeline-diagram">
+        <div class="pipe-row">
+          <div class="pipe-label">Speech</div>
+          <div class="pipe-track"><div class="pipe-bar speech" style="left:0;width:70%">User speaks</div></div>
+        </div>
+        <div class="pipe-row">
+          <div class="pipe-label">ASR</div>
+          <div class="pipe-track"><div class="pipe-bar asr-bar" style="left:0;width:70%;opacity:0.8">streaming transcription</div></div>
+        </div>
+        <div class="pipe-row">
+          <div class="pipe-label">LLM</div>
+          <div class="pipe-track">
+            <div class="pipe-bar llm-bar" style="left:8%;width:62%;opacity:0.6">speculative generation (overlapped)</div>
+            <div class="pipe-bar llm-bar" style="left:70%;width:8%">residual</div>
+          </div>
+        </div>
+        <div class="pipe-row">
+          <div class="pipe-label">TTS</div>
+          <div class="pipe-track"><div class="pipe-bar tts-bar" style="left:78%;width:8%">TTS</div></div>
+        </div>
+        <div class="pipe-annotation">user waits <span class="fast">0.35–0.68s</span> after speech ends</div>
+      </div>
     </div>
   </div>
 </section>
