@@ -7,3 +7,6 @@ soundfile
 numpy
 prettytable
 termcolor
+fastapi
+uvicorn[standard]
+python-multipart

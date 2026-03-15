@@ -350,35 +350,165 @@
     color: var(--text-dim);
   }
 
-  /* ─── Live Demo Placeholder ─── */
+  /* ─── Live Demo ─── */
   .demo-section {
     margin-bottom: 5rem;
   }
 
-  .demo-placeholder {
+  .demo-panel {
     background: var(--surface);
-    border: 1px dashed var(--border-accent);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 3rem;
-    text-align: center;
+    padding: 1.5rem;
   }
 
-  .demo-placeholder .icon {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    opacity: 0.4;
-  }
-
-  .demo-placeholder h3 {
-    font-family: var(--sans);
-    font-size: 1.1rem;
-    color: var(--text-bright);
-    margin-bottom: 0.5rem;
-  }
-
-  .demo-placeholder p {
+  .demo-server-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
     font-size: 0.75rem;
+  }
+
+  .demo-server-row label { color: var(--text-dim); white-space: nowrap; }
+
+  .demo-server-row input[type="text"] {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    color: var(--text-bright);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+  }
+
+  .demo-status {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
+  }
+  .demo-status.connected { background: var(--green); }
+  .demo-status.error { background: var(--red); }
+
+  .demo-source-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .sample-btn, .upload-label, .run-btn {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .sample-btn:hover, .upload-label:hover { border-color: var(--text-dim); }
+  .sample-btn.active { border-color: var(--green); color: var(--green); }
+
+  .upload-label { display: inline-block; }
+  .upload-label input { display: none; }
+
+  .run-btns {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .run-btn {
+    padding: 0.5rem 1.25rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+  }
+  .run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .run-btn.baseline { border-color: var(--red); color: var(--red); }
+  .run-btn.baseline:hover:not(:disabled) { background: var(--red-dim); }
+  .run-btn.predgen { border-color: var(--green); color: var(--green); }
+  .run-btn.predgen:hover:not(:disabled) { background: var(--green-dim); }
+  .run-btn.both { border-color: var(--amber); color: var(--amber); }
+  .run-btn.both:hover:not(:disabled) { background: #f59e0b22; }
+
+  .demo-loading {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.8rem;
     color: var(--text-dim);
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .demo-results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .demo-results-grid.single {
+    grid-template-columns: 1fr;
+    max-width: 550px;
+  }
+
+  .demo-result-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+  }
+
+  .demo-result-card h4 {
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .demo-result-card h4.baseline-title { color: var(--red); }
+  .demo-result-card h4.predgen-title { color: var(--green); }
+
+  .demo-result-card .metric-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+    font-size: 0.75rem;
+    border-bottom: 1px solid #ffffff06;
+  }
+
+  .demo-result-card .transcript-box {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: var(--surface);
+    border-radius: 4px;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    max-height: 60px;
+    overflow-y: auto;
+  }
+
+  .demo-result-card audio {
+    width: 100%;
+    height: 32px;
+    margin-top: 0.5rem;
   }
 
   /* ─── Footer ─── */
@@ -533,11 +663,36 @@ LLM (speculative) ══╝  ║ → TTS → Audio out
 <!-- ═══ LIVE DEMO ═══ -->
 <section class="demo-section">
   <h2 class="section-title">Live Demo</h2>
-  <p class="section-sub">Try it yourself — send audio to the GPU cluster</p>
-  <div class="demo-placeholder" id="demo-area">
-    <div class="icon">&#9201;</div>
-    <h3>Coming Soon</h3>
-    <p>Live inference endpoint is being wired up.<br>Record or upload audio and hear the difference in real time.</p>
+  <p class="section-sub">Try it yourself — send audio to the B200 and compare pipelines</p>
+  <div class="demo-panel" id="demo-area">
+
+    <div class="demo-server-row">
+      <label>GPU Server</label>
+      <input type="text" id="api-url" value="http://localhost:8765" placeholder="http://localhost:8765">
+      <div class="demo-status" id="server-status"></div>
+      <button class="sample-btn" onclick="checkServer()">Connect</button>
+    </div>
+
+    <div class="demo-source-row">
+      <span style="font-size:0.7rem; color:var(--text-dim); margin-right:0.25rem;">Sample:</span>
+      <button class="sample-btn active" onclick="selectSample(this,'jfk.wav')">jfk.wav</button>
+      <button class="sample-btn" onclick="selectSample(this,'sample1.wav')">sample1.wav</button>
+      <button class="sample-btn" onclick="selectSample(this,'sample3.wav')">sample3.wav</button>
+      <span style="font-size:0.7rem; color:var(--text-dim); margin:0 0.25rem;">or</span>
+      <label class="upload-label">
+        Upload WAV
+        <input type="file" id="file-upload" accept="audio/wav,.wav" onchange="handleUpload(this)">
+      </label>
+      <span id="upload-name" style="font-size:0.65rem; color:var(--text-dim);"></span>
+    </div>
+
+    <div class="run-btns">
+      <button class="run-btn baseline" onclick="runDemo('baseline')">Run Baseline</button>
+      <button class="run-btn predgen" onclick="runDemo('predgen')">Run PredGen</button>
+      <button class="run-btn both" onclick="runBoth()">Run Both</button>
+    </div>
+
+    <div id="demo-output"></div>
   </div>
 </section>
 
@@ -632,6 +787,126 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.15 });
 
 document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
+
+// ─── Live Demo ───
+let selectedSample = 'jfk.wav';
+let uploadedFile = null;
+
+function getApiBase() {
+  return document.getElementById('api-url').value.replace(/\/+$/, '');
+}
+
+async function checkServer() {
+  const dot = document.getElementById('server-status');
+  dot.className = 'demo-status';
+  try {
+    const r = await fetch(getApiBase() + '/health', { signal: AbortSignal.timeout(5000) });
+    const d = await r.json();
+    dot.classList.add(d.status === 'ok' ? 'connected' : 'error');
+  } catch {
+    dot.classList.add('error');
+  }
+}
+
+function selectSample(btn, name) {
+  document.querySelectorAll('.sample-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedSample = name;
+  uploadedFile = null;
+  document.getElementById('upload-name').textContent = '';
+}
+
+function handleUpload(input) {
+  if (input.files[0]) {
+    uploadedFile = input.files[0];
+    selectedSample = null;
+    document.querySelectorAll('.demo-source-row .sample-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('upload-name').textContent = uploadedFile.name;
+  }
+}
+
+function setLoading(msg) {
+  document.getElementById('demo-output').innerHTML =
+    `<div class="demo-loading"><span class="spinner"></span>${msg}</div>`;
+}
+
+function fmtTime(v) {
+  return v != null ? v.toFixed(3) + 's' : '\u2014';
+}
+
+function renderResult(data) {
+  const isBaseline = data.mode === 'baseline';
+  const titleClass = isBaseline ? 'baseline-title' : 'predgen-title';
+  const label = isBaseline ? 'Baseline (Sequential)' : 'PredGen (Speculative)';
+
+  let audioHtml = '';
+  if (data.response_audio_b64) {
+    audioHtml = `<audio controls src="data:audio/wav;base64,${data.response_audio_b64}"></audio>`;
+  }
+
+  return `
+    <div class="demo-result-card">
+      <h4 class="${titleClass}">${label}</h4>
+      <div class="metric-row"><span class="label">ASR</span><span class="value">${fmtTime(data.asr_time)}</span></div>
+      <div class="metric-row"><span class="label">LLM</span><span class="value">${fmtTime(data.llm_time)}</span></div>
+      <div class="metric-row"><span class="label">TTFS</span><span class="value">${fmtTime(data.llm_ttfs)}</span></div>
+      <div class="metric-row"><span class="label">TTS</span><span class="value">${fmtTime(data.tts_time)}</span></div>
+      <div class="metric-row" style="border:none;"><span class="label" style="font-weight:600;">Total</span><span class="value" style="font-size:1rem;font-weight:700;color:${isBaseline ? 'var(--red)' : 'var(--green)'};">${fmtTime(data.total_time)}</span></div>
+      <div class="transcript-box"><span style="color:#555;font-size:0.6rem;text-transform:uppercase;">Transcript</span><br>${data.transcript || '\u2014'}</div>
+      <div class="transcript-box"><span style="color:#555;font-size:0.6rem;text-transform:uppercase;">Response</span><br>${data.gen_text || '\u2014'}</div>
+      ${audioHtml}
+    </div>
+  `;
+}
+
+async function callApi(mode) {
+  const fd = new FormData();
+  fd.append('mode', mode);
+  if (uploadedFile) {
+    fd.append('file', uploadedFile);
+  } else if (selectedSample) {
+    fd.append('sample', selectedSample);
+  } else {
+    throw new Error('No audio selected');
+  }
+  const r = await fetch(getApiBase() + '/run', { method: 'POST', body: fd });
+  const d = await r.json();
+  if (d.error) throw new Error(d.error);
+  return d;
+}
+
+async function runDemo(mode) {
+  const out = document.getElementById('demo-output');
+  setLoading(`Running ${mode} on B200...`);
+  try {
+    const data = await callApi(mode);
+    out.innerHTML = `<div class="demo-results-grid single">${renderResult(data)}</div>`;
+  } catch (e) {
+    out.innerHTML = `<div class="demo-loading" style="color:var(--red);">Error: ${e.message}</div>`;
+  }
+}
+
+async function runBoth() {
+  const out = document.getElementById('demo-output');
+  setLoading('Running baseline on B200...');
+  try {
+    const baseline = await callApi('baseline');
+    setLoading('Running PredGen on B200...');
+    const predgen = await callApi('predgen');
+    const speedup = (baseline.total_time / predgen.total_time).toFixed(1);
+    out.innerHTML = `
+      <div style="text-align:center;margin-bottom:1rem;">
+        <span class="speedup-badge" style="font-size:0.85rem;padding:0.3rem 1rem;">${speedup}x faster with PredGen</span>
+      </div>
+      <div class="demo-results-grid">${renderResult(baseline)}${renderResult(predgen)}</div>
+    `;
+  } catch (e) {
+    out.innerHTML = `<div class="demo-loading" style="color:var(--red);">Error: ${e.message}</div>`;
+  }
+}
+
+// Auto-check server on load
+checkServer();
 </script>
 </body>
 </html>
