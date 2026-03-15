@@ -1,0 +1,122 @@
+{
+  "model": "Qwen/Qwen2.5-14B-Instruct",
+  "whisper_model": "large-v3",
+  "top_k": 3,
+  "chunk_duration": 0.5,
+  "num_files": 3,
+  "avg_speedup": 6.171579223256816,
+  "avg_time_saved": 2.4997394275665283,
+  "results": [
+    {
+      "audio_file": "jfk.wav",
+      "audio_duration": 11.0,
+      "baseline": {
+        "audio_file": "jfk.wav",
+        "audio_duration": 11.0,
+        "asr_time": 0.3393070697784424,
+        "transcript": "And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country.",
+        "llm_time": 1.7157654762268066,
+        "llm_ttfs": 0.2802002429962158,
+        "llm_nfe": 9,
+        "gen_text": "This famous quote is actually from John F. Kennedy's inaugural address on January 20, 1961. He was encouraging Americans to think about their responsibilities to their country rather than just their rights or what they could gain from it. It's a call to public service and civic duty.",
+        "tts_time": 0.5812215805053711,
+        "total_time": 2.636361598968506,
+        "response_audio_duration": 18.7,
+        "response_audio_path": "results/baseline_jfk.wav"
+      },
+      "predgen": {
+        "audio_file": "jfk.wav",
+        "audio_duration": 11.0,
+        "asr_time": 0.19584965705871582,
+        "transcript": "And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country.",
+        "llm_time": 10.725500106811523,
+        "llm_ttfs": 1773613596.1501033,
+        "llm_nfe": 352,
+        "llm_latency": 0.2115640640258789,
+        "gen_text": "country. This famous quote by John F. Kennedy encourages individuals to think about their responsibilities towards their nation rather than focusing solely on what they can gain from it. It",
+        "tts_time": 0.1131889820098877,
+        "total_time": 0.5206027030944824,
+        "total_wall_time": 11.034759759902954,
+        "response_audio_duration": 12.3,
+        "response_audio_path": "results/predgen_jfk.wav"
+      },
+      "speedup": 5.064056685257052,
+      "time_saved": 2.1157588958740234,
+      "ttfs_speedup": 1.5798268777620606e-10
+    },
+    {
+      "audio_file": "sample1.wav",
+      "audio_duration": 10.435,
+      "baseline": {
+        "audio_file": "sample1.wav",
+        "audio_duration": 10.435,
+        "asr_time": 0.28044629096984863,
+        "transcript": "He hoped there would be stew for dinner, turnips and carrots and bruised potatoes and fat mutton pieces to be ladled out in thick, peppered, flour-fattened sauce.",
+        "llm_time": 3.087277889251709,
+        "llm_ttfs": 0.6144986152648926,
+        "llm_nfe": 22,
+        "gen_text": "The sentence paints a vivid picture of a hearty, traditional stew that the narrator is hoping to have for dinner. The stew is described as being made with turnips, carrots, and potatoes that are not in perfect condition (described as \"bruised\"), and pieces of mutton, which is a type of meat from a mature sheep. The sauce is thick, peppery, and enriched with flour, giving it a rich, fatty texture. This description evokes a sense of warmth and comfort, suggesting a meal that is both satisfying and nourishing.",
+        "tts_time": 0.15419316291809082,
+        "total_time": 3.52201771736145,
+        "response_audio_duration": 27.925,
+        "response_audio_path": "results/baseline_sample1.wav"
+      },
+      "predgen": {
+        "audio_file": "sample1.wav",
+        "audio_duration": 10.435,
+        "asr_time": 0.31539392471313477,
+        "transcript": "He hoped there would be stew for dinner, turnips and carrots and bruised potatoes and fat mutton pieces to be ladled out in thick, peppered, flour-fattened sauce.",
+        "llm_time": 10.214864730834961,
+        "llm_ttfs": 1773613610.584166,
+        "llm_nfe": 337,
+        "llm_latency": 0.2657749080657954,
+        "gen_text": "brolops over bowls of hard bread. The description paints a",
+        "tts_time": 0.09895038604736328,
+        "total_time": 0.6801192188262934,
+        "total_wall_time": 10.62943410873413,
+        "response_audio_duration": 3.95,
+        "response_audio_path": "results/predgen_sample1.wav"
+      },
+      "speedup": 5.178529910446472,
+      "time_saved": 2.8418984985351567,
+      "ttfs_speedup": 3.464670160387968e-10
+    },
+    {
+      "audio_file": "sample3.wav",
+      "audio_duration": 6.625,
+      "baseline": {
+        "audio_file": "sample3.wav",
+        "audio_duration": 6.625,
+        "asr_time": 0.21457719802856445,
+        "transcript": "After early nightfall the yellow lamps would light up here and there the squalid quarter of the brothels.",
+        "llm_time": 2.5309395790100098,
+        "llm_ttfs": 0.6095700263977051,
+        "llm_nfe": 22,
+        "gen_text": "The sentence you provided paints a vivid picture of a scene in a squalid quarter known for brothels. As night falls early, the area becomes illuminated by the flickering light of yellow lamps, casting an eerie glow over the dilapidated buildings and streets. This description evokes a sense of isolation, poverty, and perhaps danger, highlighting the stark contrast between the light and the dark, and the harsh reality of the lives led in such areas.",
+        "tts_time": 0.14547228813171387,
+        "total_time": 2.8910531997680664,
+        "response_audio_duration": 26.575,
+        "response_audio_path": "results/baseline_sample3.wav"
+      },
+      "predgen": {
+        "audio_file": "sample3.wav",
+        "audio_duration": 6.625,
+        "asr_time": 0.1748058795928955,
+        "transcript": "After early nightfall the yellow lamps would light up here and there the squalid quarter of the brothels.",
+        "llm_time": 6.215882062911987,
+        "llm_ttfs": 1773613624.1896715,
+        "llm_nfe": 198,
+        "llm_latency": 0.08294510841369629,
+        "gen_text": "sentence seems to be incomplete. However, based on the",
+        "tts_time": 0.09174132347106934,
+        "total_time": 0.34949231147766113,
+        "total_wall_time": 6.482652425765991,
+        "response_audio_duration": 3.8,
+        "response_audio_path": "results/predgen_sample3.wav"
+      },
+      "speedup": 8.272151074066924,
+      "time_saved": 2.5415608882904053,
+      "ttfs_speedup": 3.4368817316466284e-10
+    }
+  ]
+}
