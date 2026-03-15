@@ -744,12 +744,12 @@ benchmarks.forEach(b => {
   const bTtsL = pct(b.baseline.asr + b.baseline.llm);
   const bTtsW = pct(b.baseline.tts);
 
-  // PredGen: ASR + LLM overlap, then small TTS
-  // Show LLM starting during ASR, finishing quickly after
+  // PredGen: ASR + LLM overlap, TTS flush after LLM
   const pAsrW = pct(b.predgen.asr);
   const pLlmL = pct(b.predgen.asr * 0.3); // starts during ASR
-  const pLlmW = pct(b.predgen.llm + b.predgen.asr * 0.5);
-  const pTtsL = pct(b.predgen.total - b.predgen.tts);
+  const pLlmEnd = b.predgen.total - b.predgen.tts;
+  const pLlmW = pct(pLlmEnd - b.predgen.asr * 0.3);
+  const pTtsL = pct(pLlmEnd);
   const pTtsW = pct(b.predgen.tts);
 
   const card = document.createElement('div');
