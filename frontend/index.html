@@ -657,20 +657,17 @@
       <div class="pipeline-diagram">
         <div class="pipe-row">
           <div class="pipe-label">Speech</div>
-          <div class="pipe-track"><div class="pipe-bar speech" style="left:0;width:30%">User speaks</div></div>
+          <div class="pipe-track"><div class="pipe-bar speech" style="left:0;width:40%">User speaks</div></div>
         </div>
         <div class="pipe-row">
           <div class="pipe-label">ASR</div>
-          <div class="pipe-track">
-            <div class="pipe-bar wait" style="left:0;width:30%"></div>
-            <div class="pipe-bar asr-bar" style="left:30%;width:12%">ASR</div>
-          </div>
+          <div class="pipe-track"><div class="pipe-bar asr-bar" style="left:0;width:40%;opacity:0.8">streaming transcription</div></div>
         </div>
         <div class="pipe-row">
           <div class="pipe-label">LLM</div>
           <div class="pipe-track">
-            <div class="pipe-bar wait" style="left:0;width:42%"></div>
-            <div class="pipe-bar llm-bar" style="left:42%;width:40%">LLM generate</div>
+            <div class="pipe-bar wait" style="left:0;width:40%"></div>
+            <div class="pipe-bar llm-bar" style="left:40%;width:42%">LLM generate (blocked)</div>
           </div>
         </div>
         <div class="pipe-row">
